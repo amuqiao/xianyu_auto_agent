@@ -22,6 +22,10 @@ class XianyuLive:
         self.cookies_str = cookies_str
         self.cookies = trans_cookies(cookies_str)
         self.xianyu.session.cookies.update(self.cookies)  # 直接使用 session.cookies.update
+        # 检查cookies中是否包含'unb'键
+        if 'unb' not in self.cookies:
+            logger.error("Cookies中未找到'unb'键，请检查cookies是否有效")
+            raise ValueError("无效的cookies: 缺少'unb'键")
         self.myid = self.cookies['unb']
         self.device_id = generate_device_id(self.myid)
         self.context_manager = ChatContextManager()

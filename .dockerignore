@@ -6,7 +6,6 @@ __pycache__/
 *$py.class
 *.so
 *_prompt.txt
-.env
 .DS_Store
 .vscode/
 *.log

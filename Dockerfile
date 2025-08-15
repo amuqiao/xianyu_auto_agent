@@ -1,9 +1,11 @@
-FROM python:3.10-alpine AS builder
+FROM python:3.12-alpine AS builder
 
 WORKDIR /app
 
 # 只安装构建所需的依赖
-RUN apk add --no-cache --virtual .build-deps \
+# 更换Alpine软件源为阿里云源
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories \
+    && apk add --no-cache --virtual .build-deps \
     gcc \
     musl-dev \
     libffi-dev \
@@ -18,14 +20,14 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 第二阶段：最终镜像
-FROM python:3.10-alpine
+FROM python:3.12-alpine
 
 # 添加元数据标签
 LABEL maintainer="coderxiu<coderxiu@qq.com>"
 LABEL description="闲鱼AI客服机器人"
 LABEL version="2.0"
 
-# 设置时区和编码
+# 设置时区、编码和OpenAI API密钥环境变量
 ENV TZ=Asia/Shanghai \
     PYTHONIOENCODING=utf-8 \
     LANG=C.UTF-8 \
@@ -55,6 +57,10 @@ COPY prompts/classify_prompt_example.txt prompts/classify_prompt.txt
 COPY prompts/price_prompt_example.txt prompts/price_prompt.txt
 COPY prompts/tech_prompt_example.txt prompts/tech_prompt.txt
 COPY prompts/default_prompt_example.txt prompts/default_prompt.txt
+
+
+# 复制环境变量文件
+COPY .env .
 
 # 只复制绝对必要的文件
 COPY main.py XianyuAgent.py XianyuApis.py context_manager.py ./
